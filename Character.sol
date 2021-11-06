@@ -1,18 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts@4.3.2/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts@4.3.2/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts@4.3.2/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts@4.3.2/security/Pausable.sol";
-import "@openzeppelin/contracts@4.3.2/access/Ownable.sol";
-import "@openzeppelin/contracts@4.3.2/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract Character is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Ownable, ERC721Burnable {
+contract Character is ERC721, ERC721Enumerable, Pausable, Ownable, ERC721Burnable {
+    using Counters for Counters.Counter;
+    
+    uint256 STR;
+    uint256 CON;
+    uint256 AGI;
+    uint256 DEX;
+    uint256 WIS;
+    uint256 INT;
+ 
+    Counters.Counter private _tokenIdCounter;
+
     constructor() ERC721("Character", "CHR") {}
 
     function _baseURI() internal pure override returns (string memory) {
-        return "https://";
+        return "https://basuri_for_image.com";
     }
 
     function pause() public onlyOwner {
@@ -23,10 +34,13 @@ contract Character is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Owna
         _unpause();
     }
 
-    function safeMint(address to, uint256 tokenId, string memory uri) public payable
-    {
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
+    function safeMint(address to) external payable {
+        require(msg.value == 0.001 ether, "You need to pay the fee to mint!");
+        uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+        _safeMint(msg.sender, tokenId);
+        
+        _generateRandomParam();
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
@@ -36,21 +50,12 @@ contract Character is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Owna
     {
         super._beforeTokenTransfer(from, to, tokenId);
     }
+    
+    function _generateRandomParam() internal {
+        
+    }
 
     // The following functions are overrides required by Solidity.
-
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
-    }
-
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
-    }
 
     function supportsInterface(bytes4 interfaceId)
         public
